@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sistema académico de estimación de riesgo de complicaciones en dengue pediátrico.">
+  <title>ComplicaSense | Sistema de apoyo académico</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#inicio" class="brand"><span class="brand-symbol">CS</span><span><strong>ComplicaSense</strong><small>Sistema de apoyo académico</small></span></a>
+      <div class="header-meta"><span class="header-status"><i></i> Modelos disponibles</span><span class="header-separator"></span><span>Analítica clínica · 2026</span></div>
+    </div>
+  </header>
+
+  <main id="inicio" class="container main-content">
+    <section class="page-intro">
+      <div><p class="overline">Evaluación de riesgo · dengue pediátrico</p><h1>Estimación de complicaciones</h1><p class="intro-copy">Compare dos modelos de clasificación para apoyar el análisis académico de pacientes individuales o de un conjunto de registros.</p></div>
+      <div class="dataset-summary"><span class="summary-label">DATOS DE ENTRENAMIENTO</span><strong>303</strong><span>registros · 29 variables</span></div>
+    </section>
+
+    <section class="notice" aria-label="Aviso de uso">
+      <span class="notice-icon">i</span><p><strong>Uso académico.</strong> Esta herramienta presenta estimaciones estadísticas y no sustituye la valoración, el diagnóstico ni las decisiones de un profesional de la salud.</p>
+    </section>
+
+    <nav class="mode-nav" aria-label="Tipo de predicción">
+      <button class="mode-tab active" data-mode="individual"><span class="tab-number">01</span><span><strong>Predicción individual</strong><small>Analizar un registro</small></span></button>
+      <button class="mode-tab" data-mode="batch"><span class="tab-number">02</span><span><strong>Predicción por lote</strong><small>Cargar múltiples registros</small></span></button>
+    </nav>
+
+    <section id="individual-view" class="view active" aria-labelledby="individual-tab">
+      <div class="clinical-layout">
+        <form id="risk-form" class="card form-card">
+          <div class="card-heading"><div><p class="overline">Registro individual</p><h2>Datos de entrada</h2></div><span class="required-note"><b>*</b> Campo requerido</span></div>
+
+          <fieldset><legend><span>01</span> Contexto del paciente</legend><p class="fieldset-help">Información demográfica y evolución inicial.</p>
+            <div class="field-grid two-columns">
+              <label class="form-label">Grupo de edad <span class="required">*</span><select id="age_over_6"><option value="0">Menor de 6 años</option><option value="1" selected>6 años o más</option></select></label>
+              <label class="form-label">Sexo <span class="required">*</span><select id="gender_female"><option value="0" selected>Masculino</option><option value="1">Femenino</option></select></label>
+              <label class="form-label full-width">Duración de la fiebre <span class="field-unit">días</span><input id="fever_days" type="number" min="1" max="10" step="1" value="3" required></label>
+            </div>
+          </fieldset>
+
+          <fieldset><legend><span>02</span> Signos y síntomas</legend><p class="fieldset-help">Seleccione las manifestaciones presentes en el registro.</p>
+            <div class="check-grid">
+              <label class="check-item"><input type="checkbox" data-field="headache"><span>Cefalea</span></label>
+              <label class="check-item"><input type="checkbox" data-field="myalgia"><span>Mialgia</span></label>
+              <label class="check-item"><input type="checkbox" data-field="abdominal_pain"><span>Dolor abdominal</span></label>
+              <label class="check-item"><input type="checkbox" data-field="rash"><span>Erupción cutánea</span></label>
+              <label class="check-item"><input type="checkbox" data-field="vomiting"><span>Vómito</span></label>
+              <label class="check-item"><input type="checkbox" data-field="breathlessness"><span>Dificultad respiratoria</span></label>
+              <label class="check-item"><input type="checkbox" data-field="bleeding"><span>Sangrado</span></label>
+              <label class="check-item"><input type="checkbox" data-field="low_blood_pressure"><span>Presión arterial baja</span></label>
+              <label class="check-item"><input type="checkbox" data-field="organomegaly"><span>Organomegalia</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset><legend><span>03</span> Resultados de laboratorio</legend><p class="fieldset-help">Ingrese valores numéricos. La ferritina puede dejarse vacía.</p>
+            <div class="field-grid three-columns">
+              <label class="form-label">Hemoglobina <span class="field-unit">g/dL</span><input id="hb" type="number" min="1" max="25" step="0.1" value="12.5" required></label>
+              <label class="form-label">Hematocrito <span class="field-unit">%</span><input id="pcv" type="number" min="5" max="70" step="0.1" value="38" required></label>
+              <label class="form-label">WBC mínimo <span class="field-unit">/µL</span><input id="lowest_wbc" type="number" min="100" max="30000" step="100" value="4000" required></label>
+              <label class="form-label">WBC máximo <span class="field-unit">/µL</span><input id="highest_wbc" type="number" min="100" max="30000" step="100" value="6000" required></label>
+              <label class="form-label highlight-field">Plaquetas <span class="field-unit">/µL</span><input id="platelet_count" type="number" min="1000" max="500000" step="1000" value="100000" required></label>
+              <label class="form-label">ALT <span class="field-unit">U/L</span><input id="alt" type="number" min="1" max="3000" step="1" value="45" required></label>
+              <label class="form-label">Creatinina <span class="field-unit">mg/dL</span><input id="creatinine" type="number" min="0.05" max="10" step="0.01" value="0.5" required></label>
+              <label class="form-label optional-field">Ferritina <span class="field-unit">ng/mL · opcional</span><input id="ferritin" type="number" min="1" max="50000" step="1" placeholder="No disponible"></label>
+            </div>
+          </fieldset>
+
+          <fieldset><legend><span>04</span> Tratamiento registrado</legend><p class="fieldset-help">Intervenciones documentadas para el paciente.</p>
+            <div class="check-grid treatment-grid">
+              <label class="check-item"><input type="checkbox" data-field="iv_fluids"><span>Fluidos intravenosos</span></label>
+              <label class="check-item"><input type="checkbox" data-field="antibiotics"><span>Antibióticos</span></label>
+              <label class="check-item"><input type="checkbox" data-field="antipyretics"><span>Antipiréticos</span></label>
+              <label class="check-item"><input type="checkbox" data-field="steroids"><span>Esteroides</span></label>
+            </div>
+          </fieldset>
+          <button class="primary-button" type="submit">Ejecutar predicción individual <span>→</span></button>
+        </form>
+
+        <aside class="card result-card" id="result-panel">
+          <div class="card-heading"><div><p class="overline">Resultado comparativo</p><h2>Estimación del riesgo</h2></div><span class="result-status"><i></i><span id="result-status-text">En espera</span></span></div>
+          <div id="empty-state" class="result-empty"><div class="empty-icon">—</div><h3>Sin predicción todavía</h3><p>Complete los datos del registro y ejecute los dos modelos para visualizar las probabilidades.</p></div>
+          <div id="result-content" hidden>
+            <div class="risk-summary"><div><span class="result-label">ESTIMACIÓN PROMEDIO</span><strong id="consensus-percent">—<small>%</small></strong><p id="consensus-message">—</p></div><div id="risk-badge" class="risk-badge"><span id="consensus-level">—</span><small>nivel estimado</small></div></div>
+            <div class="model-list"><div class="model-row"><div class="model-name"><span class="model-index">01</span><span><strong>Regresión logística</strong><small>Modelo lineal interpretable</small></span></div><strong class="model-value"><span id="logistic-percent">—</span>%</strong><div class="progress"><i id="logistic-bar"></i></div><span id="logistic-label" class="model-class">—</span></div><div class="model-row"><div class="model-name"><span class="model-index">02</span><span><strong>Red neuronal artificial</strong><small>Perceptrón multicapa</small></span></div><strong class="model-value"><span id="neural-percent">—</span>%</strong><div class="progress"><i id="neural-bar"></i></div><span id="neural-label" class="model-class">—</span></div></div>
+            <div class="result-note"><strong>Interpretación:</strong> el porcentaje indica la probabilidad estimada de pertenecer al grupo de dengue complicado dentro de los datos utilizados para entrenar los modelos.</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="batch-view" class="view" hidden>
+      <div class="card batch-upload-card">
+        <div class="card-heading"><div><p class="overline">Análisis de múltiples registros</p><h2>Predicción por lote</h2></div><a class="text-link" href="/api/batch-template">Descargar plantilla CSV</a></div>
+        <p class="batch-description">Cargue un archivo CSV o Excel con una fila por paciente. Puede utilizar el archivo original del dataset o la plantilla limpia. Si incluye la columna <code>target</code>, se calcularán las métricas y las matrices de confusión.</p>
+        <label class="drop-zone" id="drop-zone" for="batch-file"><input id="batch-file" type="file" accept=".csv,.xlsx,.xls"><span class="upload-icon">↑</span><strong>Seleccione o arrastre un archivo</strong><small>CSV o XLSX · máximo 5.000 registros · 8 MB</small><span id="file-name" class="file-name">Ningún archivo seleccionado</span></label>
+        <div class="batch-actions"><button id="batch-button" class="primary-button" type="button" disabled>Procesar lote <span>→</span></button><span id="batch-message" class="batch-message"></span></div>
+      </div>
+      <div id="batch-results" class="batch-results" hidden>
+        <div class="batch-result-header"><div><p class="overline">Salida del procesamiento</p><h2>Resultados del lote <span id="row-count"></span></h2></div><button id="download-results" class="secondary-button" type="button">Descargar resultados CSV</button></div>
+        <div id="no-target-note" class="notice compact" hidden><span class="notice-icon">i</span><p>El archivo no contiene <code>target</code>; se muestran predicciones, pero no es posible calcular métricas de evaluación.</p></div>
+        <div id="metrics-area" class="metrics-area" hidden><div class="metrics-group"><h3>Regresión logística</h3><div class="metric-grid"><div class="metric-card"><span>Accuracy</span><strong id="batch-logistic-accuracy">—</strong></div><div class="metric-card"><span>Precision</span><strong id="batch-logistic-precision">—</strong></div><div class="metric-card"><span>Recall</span><strong id="batch-logistic-recall">—</strong></div><div class="metric-card"><span>F1</span><strong id="batch-logistic-f1">—</strong></div><div class="metric-card"><span>ROC-AUC</span><strong id="batch-logistic-auc">—</strong></div></div></div><div class="metrics-group"><h3>Red neuronal artificial</h3><div class="metric-grid"><div class="metric-card"><span>Accuracy</span><strong id="batch-neural-accuracy">—</strong></div><div class="metric-card"><span>Precision</span><strong id="batch-neural-precision">—</strong></div><div class="metric-card"><span>Recall</span><strong id="batch-neural-recall">—</strong></div><div class="metric-card"><span>F1</span><strong id="batch-neural-f1">—</strong></div><div class="metric-card"><span>ROC-AUC</span><strong id="batch-neural-auc">—</strong></div></div></div></div>
+        <div id="confusion-area" class="confusion-area" hidden><div class="confusion-card"><h3>Regresión logística</h3><div class="matrix-labels"><span>Real / Pred.</span><span>No complicado</span><span>Complicado</span></div><table class="confusion-table"><tbody id="logistic-matrix"></tbody></table></div><div class="confusion-card"><h3>Red neuronal artificial</h3><div class="matrix-labels"><span>Real / Pred.</span><span>No complicado</span><span>Complicado</span></div><table class="confusion-table"><tbody id="neural-matrix"></tbody></table></div></div>
+        <div class="table-card"><div class="table-header"><h3>Predicciones individuales</h3><span>Probabilidad de complicación</span></div><div class="table-scroll"><table class="results-table"><thead><tr><th>Registro</th><th>Regresión logística</th><th>Red neuronal</th><th>Promedio</th><th>Clasificación promedio</th><th id="actual-heading" hidden>Real</th></tr></thead><tbody id="results-body"></tbody></table></div></div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="container"><span>ComplicaSense · Proyecto académico de analítica de datos</span><span>Modelos no diagnósticos · Los archivos cargados no se almacenan</span></div></footer>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

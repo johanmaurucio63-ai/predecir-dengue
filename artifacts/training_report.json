@@ -1,0 +1,85 @@
+{
+  "project": "ComplicaSense",
+  "target": "Dengue complicado (1) vs. no complicado (0)",
+  "features": [
+    "age_over_6",
+    "gender_female",
+    "fever_days",
+    "headache",
+    "myalgia",
+    "abdominal_pain",
+    "rash",
+    "vomiting",
+    "breathlessness",
+    "bleeding",
+    "low_blood_pressure",
+    "organomegaly",
+    "hb",
+    "pcv",
+    "lowest_wbc",
+    "highest_wbc",
+    "platelet_count",
+    "alt",
+    "creatinine",
+    "ferritin",
+    "iv_fluids",
+    "antibiotics",
+    "antipyretics",
+    "steroids",
+    "ferritin_missing",
+    "platelet_wbc_ratio",
+    "hb_pcv_ratio",
+    "symptom_count",
+    "treatment_count"
+  ],
+  "metrics": {
+    "logistic": {
+      "accuracy": 0.8361,
+      "precision": 0.5714,
+      "recall": 0.9231,
+      "f1": 0.7059,
+      "roc_auc": 0.9599,
+      "confusion_matrix": [
+        [
+          39,
+          9
+        ],
+        [
+          1,
+          12
+        ]
+      ]
+    },
+    "neural_network": {
+      "accuracy": 0.9016,
+      "precision": 0.8889,
+      "recall": 0.6154,
+      "f1": 0.7273,
+      "roc_auc": 0.9006,
+      "confusion_matrix": [
+        [
+          47,
+          1
+        ],
+        [
+          5,
+          8
+        ]
+      ]
+    }
+  },
+  "dataset": {
+    "rows": 303,
+    "raw_columns": 25,
+    "target_distribution": {
+      "uncomplicated": 240,
+      "complicated": 63
+    },
+    "constant_columns_removed": [],
+    "missing_values": {
+      "ALT": 1,
+      "CREATININE": 1,
+      "FERRITIN": 112
+    }
+  }
+}
