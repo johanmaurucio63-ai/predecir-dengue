@@ -2,7 +2,12 @@ services:
   - type: web
     name: complicasense
     runtime: python
-    buildCommand: pip install -r requirements.txt && jupyter nbconvert --to notebook --execute notebooks/01_exploracion_modelado_complicasense.ipynb --output executed_modelado.ipynb --output-dir artifacts
-    startCommand: gunicorn app:app
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
     healthCheckPath: /api/health
-    autoDeploy: true
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
