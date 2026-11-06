@@ -1,5 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const binaryFields = ["headache", "myalgia", "abdominal_pain", "rash", "vomiting", "breathlessness", "bleeding", "low_blood_pressure", "organomegaly", "iv_fluids", "antibiotics", "antipyretics", "steroids"];
+const numericFields = ["fever_days", "hb", "pcv", "lowest_wbc", "highest_wbc", "platelet_count", "alt", "creatinine", "ferritin"];
 let latestBatchRows = [];
 
 function setLoading(button, loading, label) {
@@ -35,6 +36,43 @@ function collectFeatures() {
   return features;
 }
 
+function cleanFeatures(features) {
+  const cleaned = { ...features };
+
+  numericFields.forEach((field) => {
+    const input = $(`#${field}`);
+    const rawValue = input.value.trim().replace(",", ".");
+    if (rawValue === "") {
+      cleaned[field] = null;
+      return;
+    }
+
+    const value = Number(rawValue);
+    const min = input.min === "" ? null : Number(input.min);
+    const max = input.max === "" ? null : Number(input.max);
+    if (!Number.isFinite(value) || (min !== null && value < min) || (max !== null && value > max)) {
+      throw new Error(`Revisa el valor de ${field.replaceAll("_", " ")}`);
+    }
+    cleaned[field] = value;
+    input.value = String(value);
+  });
+
+  binaryFields.forEach((field) => { cleaned[field] = cleaned[field] === 1 ? 1 : 0; });
+  cleaned.age_over_6 = cleaned.age_over_6 === 1 ? 1 : 0;
+  cleaned.gender_female = cleaned.gender_female === 1 ? 1 : 0;
+
+  if (cleaned.lowest_wbc !== null && cleaned.highest_wbc !== null && cleaned.lowest_wbc > cleaned.highest_wbc) {
+    throw new Error("El WBC mínimo no puede ser mayor que el WBC máximo");
+  }
+  return cleaned;
+}
+
+function setCleaningMessage(message, error = false) {
+  const element = $("#cleaning-message");
+  element.textContent = message;
+  element.classList.toggle("error", error);
+}
+
 function showModel(id, data) {
   $(`#${id}-percent`).textContent = data.percentage.toFixed(1);
   $(`#${id}-bar`).style.width = `${Math.max(2, data.percentage)}%`;
@@ -57,15 +95,33 @@ function renderIndividual(data) {
 
 $("#risk-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!event.target.checkValidity()) {
+    event.target.reportValidity();
+    return;
+  }
+
+  let features;
+  try {
+    features = cleanFeatures(collectFeatures());
+  } catch (error) {
+    setCleaningMessage(error.message, true);
+    return;
+  }
+
   const button = event.target.querySelector(".primary-button");
   const original = button.innerHTML;
   setLoading(button, true, "Procesando…");
+  setCleaningMessage("Datos limpiados y validados. Ejecutando predicción…");
   try {
-    const response = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ features: collectFeatures() }) });
+    const response = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ features }) });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "No fue posible ejecutar la predicción");
     renderIndividual(data);
-  } catch (error) { alert(`No fue posible completar la predicción: ${error.message}`); }
+    setCleaningMessage("Datos limpiados y predicción completada.");
+  } catch (error) {
+    setCleaningMessage(error.message, true);
+    alert(`No fue posible completar la predicción: ${error.message}`);
+  }
   finally { button.dataset.original = original; setLoading(button, false); }
 });
 

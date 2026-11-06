@@ -172,9 +172,42 @@ def build_model_features(frame: pd.DataFrame) -> pd.DataFrame:
     return df[MODEL_FEATURES]
 
 
+def clean_user_record(record: dict[str, Any]) -> dict[str, Any]:
+    """Limpia y valida un registro individual antes de crear sus features.
+
+    Los campos vacíos se conservan como ``NaN`` para que el imputador ajustado
+    durante el entrenamiento use la mediana correspondiente. Los indicadores
+    binarios se validan para evitar que valores arbitrarios lleguen al modelo.
+    """
+    cleaned: dict[str, Any] = {}
+    binary_columns = set(BINARY_FEATURES) | {"age_over_6", "gender_female"}
+
+    for column in BASE_FEATURES:
+        value = record.get(column, np.nan)
+        if value is None or (isinstance(value, str) and not value.strip()):
+            cleaned[column] = np.nan
+            continue
+
+        numeric = pd.to_numeric(value, errors="coerce")
+        if not np.isscalar(numeric) or pd.isna(numeric) or not np.isfinite(float(numeric)):
+            raise ValueError(f"El campo {column} debe contener un número válido")
+
+        numeric = float(numeric)
+        if column in binary_columns and numeric not in (0.0, 1.0):
+            raise ValueError(f"El campo {column} solo puede tener los valores 0 o 1")
+        cleaned[column] = numeric
+
+    lowest_wbc = cleaned.get("lowest_wbc")
+    highest_wbc = cleaned.get("highest_wbc")
+    if not pd.isna(lowest_wbc) and not pd.isna(highest_wbc) and lowest_wbc > highest_wbc:
+        raise ValueError("El WBC mínimo no puede ser mayor que el WBC máximo")
+
+    return cleaned
+
+
 def prepare_user_record(record: dict[str, Any]) -> pd.DataFrame:
     """Normaliza un registro de la interfaz y devuelve una fila de features."""
-    frame = pd.DataFrame([record])
+    frame = pd.DataFrame([clean_user_record(record)])
     return build_model_features(frame)
 
 
